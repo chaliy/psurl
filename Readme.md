@@ -14,6 +14,10 @@ For example to download stuff from http://example.com execute
 You can also use pipes
 
     get-url http://example.com | set-content example.html
+    
+Using pipes actully allows running scripts directlry from web
+
+    get-url https://gist.github.com/raw/909561/hello_world.ps1 | invoke-expression
 
 
 Installation
