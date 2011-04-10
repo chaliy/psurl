@@ -23,7 +23,7 @@ Using pipes actully allows running scripts directlry from web
 Installation
 ============
 
-If you have PsGet ( https://github.com/chaliy/psget ) installed, you can execute:
+If you have <a href="https://github.com/chaliy/psget">PsGet</a> installed, you can execute:
 
     install-module https://github.com/chaliy/psurl/raw/master/PsUrl/PsUrl.psm1
     
