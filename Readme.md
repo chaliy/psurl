@@ -23,6 +23,12 @@ Using pipes actully allows running scripts directlry from web
 Installation
 ============
 
-1. Copy PsUrl.psm1 to your modules folder (e.g. $Env:PSModulePath\PsUrl\ )
-2. Execute Import-Module PsUrl (or add this command to your profile)
-3. Enjoy!
+If you have PsGet ( https://github.com/chaliy/psget ) installed, you can execute:
+
+    install-module https://github.com/chaliy/psurl/raw/master/PsUrl/PsUrl.psm1
+    
+Or manual steps
+
+    1. Copy PsUrl.psm1 to your modules folder (e.g. $Env:PSModulePath\PsUrl\ )
+    2. Execute Import-Module PsUrl (or add this command to your profile)
+    3. Enjoy!
