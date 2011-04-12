@@ -39,7 +39,7 @@ Param(
 		$preparedData.Add($key, $Data[$key])
 	}	
 	
-	$client.UploadValues($Url, $preparedData)
+	$client.UploadValues($Url, $preparedData) | Out-Null
 	
 <#
 .Synopsis
@@ -58,3 +58,4 @@ Param(
 }
 
 Export-ModuleMember Get-Url
+Export-ModuleMember Post-Url
