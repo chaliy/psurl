@@ -25,7 +25,7 @@ Param(
 #>
 }
 
-function Post-Url {
+function Write-Url {
 [CmdletBinding()]
 Param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
@@ -48,7 +48,7 @@ Param(
 .Parameter Url
     URL to POST
 .Example
-    Post-Url http://chaliy.name -Data @{"Foo" = "Bar" }
+    Write-Url http://chaliy.name -Data @{"Foo" = "Bar" }
 
     Description
     -----------
@@ -58,4 +58,4 @@ Param(
 }
 
 Export-ModuleMember Get-Url
-Export-ModuleMember Post-Url
+Export-ModuleMember Write-Url
