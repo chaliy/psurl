@@ -5,4 +5,4 @@ write-host Should support downloading stuff
 get-url "http://example.com" | Out-Null
 
 write-host Should support posting stuff
-post-url "http://example.com" -Data @{"Foo" = "Bar"}
+write-url "http://example.com" -Data @{"Foo" = "Bar"}
