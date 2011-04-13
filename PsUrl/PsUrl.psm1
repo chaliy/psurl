@@ -30,22 +30,37 @@ function Write-Url {
 Param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
     [String]$Url,
-	[HashTable]$Data
+	[HashTable]$Data,
+	[TimeSpan]$Timeout = [System.TimeSpan]::FromMinutes(1)
 )
-    $client = (New-Object System.Net.WebClient)
-	$preparedData = (New-Object System.Collections.Specialized.NameValueCollection)
-	
-	foreach($key in $Data.Keys){
-		$preparedData.Add($key, $Data[$key])
+	$buffer = (new-object System.Text.StringBuilder)
+	$delim = ""
+	foreach($item in $Data){
+		$buffer.Append($delim).Append($item.Key).Append("=").Append($item.Value) | Out-Null
+		$delim = "&"
 	}
+	$reqBody = [System.Text.Encoding]::Default.GetBytes($buffer)
+	
 	try{
- 		$result = $client.UploadValues($Url, $preparedData)
-		[System.Text.Encoding]::Default.GetString($result)
+		$req = [System.Net.WebRequest]::Create($Url)
+		$req.Method = "POST"
+		$req.ContentType = "application/x-www-form-urlencoded"		
+		$req.Timeout = $Timeout.TotalMilliseconds
+		$reqStream = $req.GetRequestStream()		
+		$reqStream.Write($reqBody, 0, $reqBody.Length)
+		$reqStream.Close()
+		
+		$resp = $req.GetResponse()
+		$respStream = $resp.GetResponseStream()
+		$respReader = (New-Object System.IO.StreamReader($respStream))
+		$respReader.ReadToEnd() 		
 	}
 	catch [System.Net.WebException]{
- 		$errorResult = $_.Exception.Response.GetResponseStream()
-		$errorText = (New-Object System.IO.StreamReader($errorResult)).ReadToEnd()
-		Write-Error "The remote server response: $errorText"
+		if ($_.Exception -ne $null -and $_.Exception.Response -ne $null) {
+	 		$errorResult = $_.Exception.Response.GetResponseStream()
+			$errorText = (New-Object System.IO.StreamReader($errorResult)).ReadToEnd()
+			Write-Error "The remote server response: $errorText"
+		}
 		throw $_
 	}	
 	
@@ -55,6 +70,10 @@ Param(
 .Description     
 .Parameter Url
     URL to POST
+.Parameter Data
+    Hashtable of the data to post.
+.Parameter Timeout
+    Optional timeout value, by default timeout is 1 minute.
 .Example
     Write-Url http://chaliy.name -Data @{"Foo" = "Bar" }
 
@@ -64,6 +83,5 @@ Param(
 
 #>
 }
-
 Export-ModuleMember Get-Url
 Export-ModuleMember Write-Url
