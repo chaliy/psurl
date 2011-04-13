@@ -37,9 +37,17 @@ Param(
 	
 	foreach($key in $Data.Keys){
 		$preparedData.Add($key, $Data[$key])
+	}
+	try{
+ 		$result = $client.UploadValues($Url, $preparedData)
+		[System.Text.Encoding]::Default.GetString($result)
+	}
+	catch [System.Net.WebException]{
+ 		$errorResult = $_.Exception.Response.GetResponseStream()
+		$errorText = (New-Object System.IO.StreamReader($errorResult)).ReadToEnd()
+		Write-Error "The remote server response: $errorText"
+		throw $_
 	}	
-	
-	$client.UploadValues($Url, $preparedData) | Out-Null
 	
 <#
 .Synopsis
