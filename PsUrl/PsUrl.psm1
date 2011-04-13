@@ -35,11 +35,11 @@ Param(
 )
 	$buffer = (new-object System.Text.StringBuilder)
 	$delim = ""
-	foreach($item in $Data){
-		$buffer.Append($delim).Append($item.Key).Append("=").Append($item.Value) | Out-Null
+	foreach($key in $Data.Keys){
+		$buffer.Append($delim).Append($key).Append("=").Append($Data[$key]) | Out-Null
 		$delim = "&"
 	}
-	$reqBody = [System.Text.Encoding]::Default.GetBytes($buffer)
+	$reqBody = [System.Text.Encoding]::Default.GetBytes($buffer)	
 	
 	try{
 		$req = [System.Net.WebRequest]::Create($Url)
@@ -83,5 +83,7 @@ Param(
 
 #>
 }
+
+
 Export-ModuleMember Get-Url
 Export-ModuleMember Write-Url
