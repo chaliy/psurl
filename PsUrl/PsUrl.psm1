@@ -6,15 +6,22 @@ function Get-Url {
 [CmdletBinding()]
 Param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
-    [String]$Url
+    [String]$Url,
+    [String]$ToFile
 )
-    (New-Object System.Net.WebClient).DownloadString($Url)
+    if ($ToFile -ne ""){
+        (New-Object System.Net.WebClient).DownloadFile($Url, $ToFile)    
+    } else {
+        (New-Object System.Net.WebClient).DownloadString($Url)
+    }
 <#
 .Synopsis
     Downloads from url as a string.
 .Description     
 .Parameter Url
     URL to download
+.Parameter ToFile
+    Optional parameter to dowload stuff to the file.
 .Example
     Get-Url http://chaliy.name
 
