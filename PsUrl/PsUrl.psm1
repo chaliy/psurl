@@ -32,14 +32,13 @@ Param(
     [String]$Url,
 	[HashTable]$Data,
 	[TimeSpan]$Timeout = [System.TimeSpan]::FromMinutes(1)
-)
-	$buffer = (new-object System.Text.StringBuilder)
-	$delim = ""
+)    
+    Add-Type -AssemblyName System.Web
+    $formData = [System.Web.HttpUtility]::ParseQueryString("")	
 	foreach($key in $Data.Keys){
-		$buffer.Append($delim).Append($key).Append("=").Append($Data[$key]) | Out-Null
-		$delim = "&"
+        $formData.Add($key, $Data[$key])		
 	}
-	$reqBody = [System.Text.Encoding]::Default.GetBytes($buffer)	
+	$reqBody = [System.Text.Encoding]::Default.GetBytes($formData.ToString())	
 	
 	try{
 		$req = [System.Net.WebRequest]::Create($Url)
