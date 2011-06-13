@@ -34,7 +34,7 @@ Installation
 
 If you have <a href="https://github.com/chaliy/psget">PsGet</a> installed, you can execute:
 
-    install-module https://github.com/chaliy/psurl/raw/master/PsUrl/PsUrl.psm1
+    install-module PsUrl
     
 Or manual steps
 
