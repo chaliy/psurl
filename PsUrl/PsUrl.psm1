@@ -37,39 +37,67 @@ function Write-Url {
 Param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
     [String]$Url,
-	[HashTable]$Data,
-	[TimeSpan]$Timeout = [System.TimeSpan]::FromMinutes(1)
+    [HashTable]$Data,
+    [String]$Content,
+    [TimeSpan]$Timeout = [TimeSpan]::FromMinutes(1),
+    [Management.Automation.PSCredential]$Credential
 )    
-    Add-Type -AssemblyName System.Web
-    $formData = [System.Web.HttpUtility]::ParseQueryString("")	
-	foreach($key in $Data.Keys){
-        $formData.Add($key, $Data[$key])		
-	}
-	$reqBody = [System.Text.Encoding]::Default.GetBytes($formData.ToString())	
-	
-	try{
-		$req = [System.Net.WebRequest]::Create($Url)
-		$req.Method = "POST"
-		$req.ContentType = "application/x-www-form-urlencoded"		
-		$req.Timeout = $Timeout.TotalMilliseconds
-		$reqStream = $req.GetRequestStream()		
-		$reqStream.Write($reqBody, 0, $reqBody.Length)
-		$reqStream.Close()
-		
-		$resp = $req.GetResponse()
-		$respStream = $resp.GetResponseStream()
-		$respReader = (New-Object System.IO.StreamReader($respStream))
-		$respReader.ReadToEnd() 		
-	}
-	catch [System.Net.WebException]{
-		if ($_.Exception -ne $null -and $_.Exception.Response -ne $null) {
-	 		$errorResult = $_.Exception.Response.GetResponseStream()
-			$errorText = (New-Object System.IO.StreamReader($errorResult)).ReadToEnd()
-			Write-Error "The remote server response: $errorText"
-		}
-		throw $_
-	}	
-	
+    
+
+    try{
+        $req = [Net.WebRequest]::Create($Url)
+        $req.Method = "POST"
+        $req.Timeout = $Timeout.TotalMilliseconds
+        if ($Credential){
+            $ntwCred = $Credential.GetNetworkCredential()
+            $auth = "Basic " + [Convert]::ToBase64String([Text.Encoding]::Default.GetBytes($ntwCred.UserName + ":" + $ntwCred.Password))
+            $req.Headers.Add("Authorization", $auth)
+            $req.Credentials = $ntwCred
+            $req.PreAuthenticate = $true
+        }
+        
+        if ($Content -ne ""){
+            $reqStream = $req.GetRequestStream()
+            $reqBody = [Text.Encoding]::Default.GetBytes($Content)
+            $reqStream.Write($reqBody, 0, $reqBody.Length)
+            
+        } else {
+        
+            Add-Type -AssemblyName System.Web
+            $formData = [Web.HttpUtility]::ParseQueryString("")
+            foreach($key in $Data.Keys){
+                $formData.Add($key, $Data[$key])
+            }
+            $reqBody = [Text.Encoding]::Default.GetBytes($formData.ToString())
+        
+            $req.ContentType = "application/x-www-form-urlencoded"
+            $reqStream = $req.GetRequestStream()
+            $reqStream.Write($reqBody, 0, $reqBody.Length)
+            
+        }
+        
+        $reqStream.Close()
+        
+        $Method = $req.Method
+        Write-Verbose "Execute $Method request"
+        foreach($header in $req.Headers.Keys){
+            Write-Verbose ("$header : " + $req.Headers[$header])
+        }
+                
+        $resp = $req.GetResponse()
+        $respStream = $resp.GetResponseStream()
+        $respReader = (New-Object IO.StreamReader($respStream))
+        $respReader.ReadToEnd()
+    }
+    catch [Net.WebException]{
+        if ($_.Exception -ne $null -and $_.Exception.Response -ne $null) {
+            $errorResult = $_.Exception.Response.GetResponseStream()
+            $errorText = (New-Object IO.StreamReader($errorResult)).ReadToEnd()
+            Write-Error "The remote server response: $errorText"
+        }
+        throw $_
+    }
+
 <#
 .Synopsis
     POST values to URL
