@@ -7,12 +7,21 @@ function Get-Url {
 Param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
     [String]$Url,
-    [String]$ToFile
+    [String]$ToFile,
+    [Management.Automation.PSCredential]$Credential
 )
+    $client = (New-Object Net.WebClient)
+    if ($Credential){
+        $ntwCred = $Credential.GetNetworkCredential()
+        $client.Credentials = $ntwCred        
+        $auth = "Basic " + [Convert]::ToBase64String([Text.Encoding]::Default.GetBytes($ntwCred.UserName + ":" + $ntwCred.Password))
+        $client.Headers.Add("Authorization", $auth)
+    }
+
     if ($ToFile -ne ""){
-        (New-Object System.Net.WebClient).DownloadFile($Url, $ToFile)    
+        $client.DownloadFile($Url, $ToFile)    
     } else {
-        (New-Object System.Net.WebClient).DownloadString($Url)
+        $client.DownloadString($Url)
     }
 <#
 .Synopsis
@@ -40,7 +49,8 @@ Param(
     [HashTable]$Data,
     [String]$Content,
     [TimeSpan]$Timeout = [TimeSpan]::FromMinutes(1),
-    [Management.Automation.PSCredential]$Credential
+    [Management.Automation.PSCredential]$Credential,
+    [String]$ContentType
 )    
     
 
@@ -54,6 +64,10 @@ Param(
             $req.Headers.Add("Authorization", $auth)
             $req.Credentials = $ntwCred
             $req.PreAuthenticate = $true
+        }
+
+        if ($ContentType -ne ""){
+            $req.ContentType = $ContentType
         }
         
         if ($Content -ne ""){
@@ -108,6 +122,8 @@ Param(
     Hashtable of the data to post.
 .Parameter Timeout
     Optional timeout value, by default timeout is 1 minute.
+.Parameter ContentType
+    Adds Content-Type header to request
 .Example
     Write-Url http://chaliy.name -Data @{"Foo" = "Bar" }
 
