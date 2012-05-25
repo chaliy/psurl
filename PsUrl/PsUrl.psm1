@@ -10,6 +10,8 @@ Param(
     [String]$ToFile,
     [Management.Automation.PSCredential]$Credential
 )
+    Write-Verbose "Get-Url is considered obsolete. Please use Get-WebContent instead"
+
     $client = (New-Object Net.WebClient)
     if ($Credential){
         $ntwCred = $Credential.GetNetworkCredential()
@@ -41,12 +43,96 @@ Param(
 #>
 }
 
+function Get-WebContent {
+[CmdletBinding()]
+Param(
+    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
+    [String]$Url,
+    [Management.Automation.PSCredential]$Credential
+)
+    $client = (New-Object Net.WebClient)
+    if ($Credential){
+        $ntwCred = $Credential.GetNetworkCredential()
+        $client.Credentials = $ntwCred        
+        $auth = "Basic " + [Convert]::ToBase64String([Text.Encoding]::Default.GetBytes($ntwCred.UserName + ":" + $ntwCred.Password))
+        $client.Headers.Add("Authorization", $auth)
+    }    
+
+    try {
+        $client.DownloadString($Url)    
+    } catch [System.Net.WebException] {
+        throw "Request failed: ""$($_.Exception.Message)"""
+    }
+    
+<#
+.Synopsis
+    Downloads content from given url as a string.
+.Description     
+.Parameter Url
+    URL to download
+.Parameter ToFile
+    Optional parameter to dowload stuff to the file.
+.Example
+    Get-WebContent http://chaliy.name
+
+    Description
+    -----------
+    Downloads content of the http://chaliy.name
+
+.Link
+    Send-WebContent
+
+#>
+}
+
 function Write-Url {
 [CmdletBinding()]
 Param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
     [String]$Url,
     [HashTable]$Data,
+    [String]$Content,
+    [TimeSpan]$Timeout = [TimeSpan]::FromMinutes(1),
+    [Management.Automation.PSCredential]$Credential,
+    [String]$ContentType
+)    
+    Write-Verbose "Write-Url is considered obsolete. Please use Send-WebContent instead"
+    if ($Content -ne ""){
+        Send-WebContent -Url:$Url -Content:$Content -Timeout:$Timeout -Credential:$Credential -ContentType:$ContentType
+    }  else {
+        Send-WebContent -Url:$Url -Data:$Data -Timeout:$Timeout -Credential:$Credential -ContentType:$ContentType
+    }
+<#
+.Synopsis
+    POST values to URL
+.Description     
+.Parameter Url
+    URL to POST
+.Parameter Data
+    Hashtable of the data to post.
+.Parameter Timeout
+    Optional timeout value, by default timeout is 1 minute.
+.Parameter ContentType
+    Adds Content-Type header to request
+.Example
+    Write-Url http://chaliy.name -Data @{"Foo" = "Bar" }
+
+    Description
+    -----------
+    POST's to the http://chaliy.name as application/x-www-form-urlencoded
+
+#>
+}
+
+
+function Send-WebContent {
+[CmdletBinding()]
+Param(
+    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
+    [String]$Url,
+    [Parameter(ParameterSetName='Data')]
+    [HashTable]$Data,
+    [Parameter(ParameterSetName='Content')]
     [String]$Content,
     [TimeSpan]$Timeout = [TimeSpan]::FromMinutes(1),
     [Management.Automation.PSCredential]$Credential,
@@ -69,27 +155,27 @@ Param(
         if ($ContentType -ne ""){
             $req.ContentType = $ContentType
         }
-        
-        if ($Content -ne ""){
-            $reqStream = $req.GetRequestStream()
-            $reqBody = [Text.Encoding]::Default.GetBytes($Content)
-            $reqStream.Write($reqBody, 0, $reqBody.Length)
-            
-        } else {
-        
-            Add-Type -AssemblyName System.Web
-            $formData = [Web.HttpUtility]::ParseQueryString("")
-            foreach($key in $Data.Keys){
-                $formData.Add($key, $Data[$key])
+
+        switch($PSCmdlet.ParameterSetName) {
+            Content { 
+                $reqStream = $req.GetRequestStream()
+                $reqBody = [Text.Encoding]::Default.GetBytes($Content)
+                $reqStream.Write($reqBody, 0, $reqBody.Length)
             }
-            $reqBody = [Text.Encoding]::Default.GetBytes($formData.ToString())
-        
-            $req.ContentType = "application/x-www-form-urlencoded"
-            $reqStream = $req.GetRequestStream()
-            $reqStream.Write($reqBody, 0, $reqBody.Length)
+            Data {
+                Add-Type -AssemblyName System.Web
+                $formData = [Web.HttpUtility]::ParseQueryString("")
+                foreach($key in $Data.Keys){
+                    $formData.Add($key, $Data[$key])
+                }
+                $reqBody = [Text.Encoding]::Default.GetBytes($formData.ToString())
             
+                $req.ContentType = "application/x-www-form-urlencoded"
+                $reqStream = $req.GetRequestStream()
+                $reqStream.Write($reqBody, 0, $reqBody.Length)
+            }
         }
-        
+               
         $reqStream.Close()
         
         $Method = $req.Method
@@ -125,15 +211,24 @@ Param(
 .Parameter ContentType
     Adds Content-Type header to request
 .Example
-    Write-Url http://chaliy.name -Data @{"Foo" = "Bar" }
+    Send-WebContent http://chaliy.name -Data @{"Foo" = "Bar" }
 
     Description
     -----------
     POST's to the http://chaliy.name as application/x-www-form-urlencoded
 
+.Link
+    Get-WebContent
 #>
 }
 
 
-Export-ModuleMember Get-Url
-Export-ModuleMember Write-Url
+Export-ModuleMember Get-Url #Obsolete
+Export-ModuleMember Write-Url #Obsolete
+
+Set-Alias gwc Get-WebContent
+Set-Alias swc Send-WebContent
+Export-ModuleMember Get-WebContent
+Export-ModuleMember Send-WebContent
+Export-ModuleMember -Alias gwc
+Export-ModuleMember -Alias swc
