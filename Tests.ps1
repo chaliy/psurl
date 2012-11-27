@@ -15,3 +15,6 @@ remove-item "$here\example.html"
 write-host Should support posting stuff
 send-webcontent "http://example.com" -Data @{"Foo" = "Bar"} | out-null
 
+
+write-host Should support posting stuff with headers
+send-webcontent "http://example.com" -Data @{"Foo" = "Bar"} -Headers @{"Something" = "Funny"} | out-null

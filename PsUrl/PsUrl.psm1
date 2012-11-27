@@ -136,7 +136,8 @@ Param(
     [String]$Content,
     [TimeSpan]$Timeout = [TimeSpan]::FromMinutes(1),
     [Management.Automation.PSCredential]$Credential,
-    [String]$ContentType
+    [String]$ContentType,
+    [HashTable]$Headers
 )    
     
 
@@ -154,6 +155,12 @@ Param(
 
         if ($ContentType -ne ""){
             $req.ContentType = $ContentType
+        }
+
+        if ($Headers -ne $Null){
+            foreach($headerName in $Headers.Keys){
+                $req.Headers.Add($headerName, $Headers[$headerName])
+            }
         }
 
         switch($PSCmdlet.ParameterSetName) {
@@ -209,7 +216,9 @@ Param(
 .Parameter Timeout
     Optional timeout value, by default timeout is 1 minute.
 .Parameter ContentType
-    Adds Content-Type header to request
+    Adds Content-Type header to the request
+.Parameter Headers
+    Adds arbitrary headers to the request
 .Example
     Send-WebContent http://chaliy.name -Data @{"Foo" = "Bar" }
 

@@ -5,8 +5,8 @@ Set of commands to download and post to web
 # Features
 
 1. Download content from any URL as a string
-2. Download content from any URL to file
 3. POST url encoded form to any URL
+3. POST arbitrary requests to any URL
 
 # Examples
 
@@ -22,9 +22,10 @@ Using pipes actully allows running scripts directly from web
 
     get-webcontent https://gist.github.com/raw/909561/hello_world.ps1 | invoke-expression
 
-Another option is to download to file
+And of course you can POST content
 
-    get-url http://example.com -ToFile "example.html"
+    send-webcontent "http://example.com" -Data @{"Foo" = "Bar"}
+
 
 # Installation
 
