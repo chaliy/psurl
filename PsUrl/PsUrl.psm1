@@ -32,7 +32,7 @@ Param(
 .Parameter Url
     URL to download
 .Parameter ToFile
-    Optional parameter to dowload stuff to the file.
+    Optional parameter to download stuff to the file.
 .Example
     Get-Url http://chaliy.name
 
@@ -48,7 +48,8 @@ function Get-WebContent {
 Param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0)]    
     [String]$Url,
-    [Management.Automation.PSCredential]$Credential
+    [Management.Automation.PSCredential]$Credential,
+    $Encoding
 )
     $client = (New-Object Net.WebClient)
     if ($Credential){
@@ -57,6 +58,12 @@ Param(
         $auth = "Basic " + [Convert]::ToBase64String([Text.Encoding]::Default.GetBytes($ntwCred.UserName + ":" + $ntwCred.Password))
         $client.Headers.Add("Authorization", $auth)
     }    
+    if ($Encoding){
+        if ($Encoding -is [string]){
+            $Encoding = [Text.Encoding]::GetEncoding($Encoding)
+        }
+        $client.Encoding = $Encoding        
+    }
 
     try {
         $client.DownloadString($Url)    
@@ -70,14 +77,23 @@ Param(
 .Description     
 .Parameter Url
     URL to download
-.Parameter ToFile
-    Optional parameter to dowload stuff to the file.
+.Parameter Credential
+    Optional parameter to specified basic authorization credentials
+.Parameter Encoding
+    Optional parameter to specified encoding of the content(e.g. Utf-8)
 .Example
     Get-WebContent http://chaliy.name
 
     Description
     -----------
     Downloads content of the http://chaliy.name
+
+.Example
+    Get-WebContent http://chaliy.name -Encoding Utf-8
+
+    Description
+    -----------
+    Downloads content of the http://chaliy.name with UTF-8 encoding
 
 .Link
     Send-WebContent
