@@ -38,7 +38,7 @@ which should output something like this:
     "C:\Users\[User]\Documents\WindowsPowerShell\Modules" is added to the PSModulePath environment variable
     Module PsUrl was successfully installed.
 
-Alternatively, here are the manual steps
+Alternatively, here are the manual steps:
 
     1. Copy PsUrl.psm1 to your modules folder (e.g. $Env:PSModulePath\PsUrl\ )
     2. Execute Import-Module PsUrl (or add this command to your profile)
