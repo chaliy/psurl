@@ -1,6 +1,6 @@
 # PsUrl Utils
 
-Set of commands to download and post to web
+Set of commands to download from and post to the web
 
 # Features
 
@@ -18,7 +18,7 @@ You can also use pipes
 
     get-webcontent http://example.com | set-content example.html
     
-Using pipes actully allows running scripts directly from the web
+Using pipes actually allows running scripts directly from the web
 
     get-webcontent https://gist.github.com/raw/909561/hello_world.ps1 | invoke-expression
 
