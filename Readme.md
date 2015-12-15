@@ -40,9 +40,9 @@ which should output something like this:
 
 Alternatively, here are the manual steps:
 
-    1. Copy PsUrl.psm1 to your modules folder (e.g. $Env:PSModulePath\PsUrl\ )
-    2. Execute Import-Module PsUrl (or add this command to your profile)
-    3. Enjoy!
+1. Copy `PsUrl.psm1` to your modules folder (e.g. `$Env:PSModulePath\PsUrl\` )
+2. Execute `Import-Module PsUrl` (or add this command to your profile)
+3. Enjoy!
 
 # License
 
